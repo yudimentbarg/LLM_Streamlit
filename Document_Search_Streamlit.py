@@ -23,23 +23,34 @@ if st.button("Process Query"):
         # Document search logic
         loader = PyPDFDirectoryLoader(directory_path)
         docs = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-        chunks = text_splitter.split_documents(docs)
-        embeddings = HuggingFaceBgeEmbeddings(model_name="BAAI/bge-small-en-v1.5",
-                                              model_kwargs={'device': 'cpu'},
-                                              encode_kwargs={'normalize_embeddings': True})
-        vectorstore = FAISS.from_documents(chunks, embeddings)
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 20})
-        docs = retriever.get_relevant_documents(query)
+              if docs:
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+            chunks = text_splitter.split_documents(docs)
 
-        # Display document search results
-        for doc in docs:
-            st.write(doc.page_content)
+            if chunks:
+                embeddings = HuggingFaceBgeEmbeddings(model_name="BAAI/bge-small-en-v1.5",
+                                                      model_kwargs={'device': 'cpu'},
+                                                      encode_kwargs={'normalize_embeddings': True})
+                vectorstore = FAISS.from_documents(chunks, embeddings)
+                retriever = vectorstore.as_retriever(search_kwargs={"k": 20})
+                retrieved_docs = retriever.get_relevant_documents(query)
 
-        # Web search logic (handled by the same Cohere model)
-        try:
-            web_search_results = co.generate(prompt=query, max_tokens=50).generations[0].text  # Make the API call
-            st.write(f"Web Search Results: \n\n{web_search_results}")
+                # Display document search results
+                for doc in retrieved_docs:
+                    st.write(doc.page_content)
+            else:
+                st.error("No chunks were generated from the documents.")
+        else:
+            st.error("No documents were found in the specified directory.")
+
+# Web search logic (handled by the same Cohere model)
+    try:
+            generation_result = co.generate(prompt=query, max_tokens=50)
+            if generation_result.generations:
+                web_search_results = generation_result.generations[0].text  # Access the first result safely
+                st.write(f"Web Search Results: \n\n{web_search_results}")
+            else:
+                st.error("No generation results found.")
         except Exception as e:
             st.error(f"An error occurred: {e}")
     else:
