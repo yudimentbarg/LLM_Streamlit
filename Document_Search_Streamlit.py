@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # Import Streamlit
+
+# In[1]:
+
+
 import streamlit as st
 import cohere
 from langchain.document_loaders.pdf import PyPDFDirectoryLoader
@@ -23,7 +31,7 @@ if st.button("Process Query"):
         # Document search logic
         loader = PyPDFDirectoryLoader(directory_path)
         docs = loader.load()
-              if docs:
+        if docs:
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
             chunks = text_splitter.split_documents(docs)
 
@@ -43,8 +51,8 @@ if st.button("Process Query"):
         else:
             st.error("No documents were found in the specified directory.")
 
-# Web search logic (handled by the same Cohere model)
-    try:
+        # Web search logic (handled by the same Cohere model)
+        try:
             generation_result = co.generate(prompt=query, max_tokens=50)
             if generation_result.generations:
                 web_search_results = generation_result.generations[0].text  # Access the first result safely
@@ -55,6 +63,4 @@ if st.button("Process Query"):
             st.error(f"An error occurred: {e}")
     else:
         st.error("Please enter a more substantial query.")
-
-
 
