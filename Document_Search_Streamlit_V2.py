@@ -6,7 +6,7 @@ from langchain.embeddings import HuggingFaceBgeEmbeddings
 from langchain.vectorstores import FAISS
 
 # Load the API key securely
-api_key = st.secrets["KJefdUzquaCHsNJ7SXgJFHZH3Ti132hyxmKMySGU"]
+api_key = st.secrets["COHERE_API_KEY"]
 
 # Initialize the Cohere client
 co = cohere.Client(api_key)
